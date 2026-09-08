@@ -13,7 +13,7 @@ import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, de
 function App() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [language, setLanguage] = useState(localStorage.getItem('app_lang') || 'en');
-  const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || '밥사주재홍');
+  const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || "s notes");
 
   const handleRenameWorkspace = () => {
     const newName = prompt(language === 'ko' ? '워크스페이스 이름을 입력하세요:' : 'Enter workspace name:', workspaceName);
