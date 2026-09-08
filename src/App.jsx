@@ -13,6 +13,15 @@ import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, de
 function App() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [language, setLanguage] = useState(localStorage.getItem('app_lang') || 'en');
+  const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || '밥사주재홍');
+
+  const handleRenameWorkspace = () => {
+    const newName = prompt(language === 'ko' ? '워크스페이스 이름을 입력하세요:' : 'Enter workspace name:', workspaceName);
+    if (newName && newName.trim() !== '') {
+      setWorkspaceName(newName.trim());
+      localStorage.setItem('workspace_name', newName.trim());
+    }
+  };
 
   const toggleLanguage = () => {
     const newLang = language === 'en' ? 'ko' : 'en';
@@ -22,7 +31,7 @@ function App() {
 
   const t = {
     en: {
-      title: "밥사주재홍 Workspace",
+      title: workspaceName,
       upload: "Upload a PDF",
       uploadDesc: "Drag and drop a PDF file here.",
       choose: "Choose PDF",
@@ -33,7 +42,7 @@ function App() {
       noSaved: "No saved documents yet."
     },
     ko: {
-      title: "밥사주재홍 워크스페이스",
+      title: workspaceName,
       upload: "PDF 업로드",
       uploadDesc: "여기에 PDF 파일을 드래그 앤 드롭하세요.",
       choose: "PDF 선택",
@@ -63,7 +72,7 @@ function App() {
     }
     setToolMode(newMode);
   };
-  const [penColor, setPenColor] = useState('#ef4444');
+  const [penColor, setPenColor] = useState('#4A3F35');
   const [penThickness, setPenThickness] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
@@ -351,7 +360,7 @@ function App() {
       {/* Home Screen */}
       {!activeDocumentId && (
         <div className="home-container">
-          <h1 className="home-title">{t.title}</h1>
+          <h1 className="home-title" onClick={handleRenameWorkspace} style={{ cursor: 'pointer' }} title={language === 'ko' ? '클릭하여 이름 변경' : 'Click to rename'}>{t.title} ✏️</h1>
           
           <div className="home-grid">
             <div 
