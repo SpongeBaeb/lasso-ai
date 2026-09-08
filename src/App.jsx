@@ -521,35 +521,34 @@ function App() {
             onClick={() => setToolMode('lasso')} 
             title="Lasso Tool"
           />
-          <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
-          <div style={{ position: 'relative' }}>
-            <ToolbarButton 
-              icon={<Download size={28} />} 
-              active={showExportMenu} 
-              onClick={() => setShowExportMenu(!showExportMenu)} 
-              title="Export"
-            />
-            {showExportMenu && (
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '0.5rem', backgroundColor: 'var(--panel-bg)', padding: '0.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                <button 
-                  onClick={() => handleExport('png')}
-                  style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Export as PNG
-                </button>
-                <button 
-                  onClick={() => handleExport('pdf')}
-                  style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Export as PDF
-                </button>
-              </div>
-            )}
-          </div>
+          <ToolbarButton 
+            icon={<Download size={28} />} 
+            active={showExportMenu} 
+            onClick={() => setShowExportMenu(!showExportMenu)} 
+            title="Export"
+          />
+        </div>
+      )}
+
+      {/* Export Menu (Rendered outside to prevent clipping from overflow-x) */}
+      {activeDocumentId && showExportMenu && (
+        <div style={{ position: 'fixed', bottom: '6.5rem', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--panel-bg)', padding: '0.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 1001, backdropFilter: 'blur(12px)' }}>
+          <button 
+            onClick={() => handleExport('png')}
+            style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >
+            Export as PNG
+          </button>
+          <button 
+            onClick={() => handleExport('pdf')}
+            style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >
+            Export as PDF
+          </button>
         </div>
       )}
 
