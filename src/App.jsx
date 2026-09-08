@@ -302,34 +302,19 @@ function App() {
       
       {/* Home Screen */}
       {!activeDocumentId && (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '3rem', maxWidth: '1000px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-          <h1 style={{ color: '#1e293b', marginBottom: '2rem' }}>밥사주재홍 Workspace</h1>
+        <div className="home-container">
+          <h1 className="home-title">밥사주재홍 Workspace</h1>
           
           <div className="home-grid">
             <div 
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              style={{ 
-                backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.1)' : 'white', 
-                padding: '3rem', 
-                borderRadius: '16px', 
-                textAlign: 'center', 
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                border: isDragging ? '2px dashed #3b82f6' : '2px dashed transparent',
-                transition: 'all 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className={`home-card upload-card ${isDragging ? 'dragging' : ''}`}
             >
-              <h2 style={{ marginTop: 0, color: '#334155' }}>Upload a PDF</h2>
-              <p style={{ color: '#64748b', marginBottom: '2rem' }}>Drag and drop a PDF file here.</p>
-              <label style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                backgroundColor: '#3b82f6', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500
-              }}>
+              <h2>Upload a PDF</h2>
+              <p>Drag and drop a PDF file here.</p>
+              <label className="primary-btn">
                 <Upload size={20} />
                 Choose PDF
                 <input type="file" accept="application/pdf" onChange={handleFileChange} style={{ display: 'none' }} />
@@ -338,40 +323,22 @@ function App() {
 
             <div 
               onClick={handleCreateBlankNote}
-              style={{ 
-                backgroundColor: 'white', 
-                padding: '3rem', 
-                borderRadius: '16px', 
-                textAlign: 'center', 
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                border: '2px solid #e2e8f0',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e2e8f0'}
+              className="home-card blank-note-card"
             >
-              <h2 style={{ marginTop: 0, color: '#334155' }}>Blank Note</h2>
-              <p style={{ color: '#64748b', marginBottom: '2rem' }}>Start scribbling on a blank whiteboard.</p>
-              <button style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                backgroundColor: '#1e293b', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, border: 'none'
-              }}>
+              <h2>Blank Note</h2>
+              <p>Start scribbling on a blank whiteboard.</p>
+              <button className="dark-btn">
                 <Pen size={20} />
                 Create Note
               </button>
             </div>
           </div>
 
-          <h2 style={{ color: '#334155', marginBottom: '1rem' }}>Saved Documents</h2>
+          <h2 className="section-title">Saved Documents</h2>
           {savedDocs.length === 0 ? (
-            <p style={{ color: '#94a3b8' }}>No saved documents yet.</p>
+            <p className="empty-text">No saved documents yet.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+            <div className="saved-docs-grid">
               {savedDocs.map(doc => (
                 <div 
                   key={doc.id}
