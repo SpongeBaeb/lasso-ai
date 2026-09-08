@@ -7,6 +7,7 @@ import { AiDialog } from './components/AiDialog';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { PdfViewer } from './components/PdfViewer';
 import { AnnotationCanvas } from './components/AnnotationCanvas';
+import { RenameModal } from './components/RenameModal';
 import { initGemini } from './lib/gemini';
 import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, deleteDocument, renameDocument } from './lib/storage';
 
@@ -15,12 +16,27 @@ function App() {
   const [language, setLanguage] = useState(localStorage.getItem('app_lang') || 'en');
   const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || "s notes");
 
+  // Rename modal state
+  const [renameModal, setRenameModal] = useState({ isOpen: false, currentName: '', label: '', onConfirm: null });
+
+  const openRenameModal = (currentName, label, onConfirm) => {
+    setRenameModal({ isOpen: true, currentName, label, onConfirm });
+  };
+
+  const closeRenameModal = () => {
+    setRenameModal({ isOpen: false, currentName: '', label: '', onConfirm: null });
+  };
+
   const handleRenameWorkspace = () => {
-    const newName = prompt(language === 'ko' ? '워크스페이스 이름을 입력하세요:' : 'Enter workspace name:', workspaceName);
-    if (newName && newName.trim() !== '') {
-      setWorkspaceName(newName.trim());
-      localStorage.setItem('workspace_name', newName.trim());
-    }
+    openRenameModal(
+      workspaceName,
+      language === 'ko' ? '워크스페이스 이름을 입력하세요' : 'Rename your workspace',
+      (newName) => {
+        setWorkspaceName(newName);
+        localStorage.setItem('workspace_name', newName);
+        closeRenameModal();
+      }
+    );
   };
 
   const toggleLanguage = () => {
@@ -143,11 +159,17 @@ function App() {
 
   const handleRenameDoc = async (id, currentName, e) => {
     e.stopPropagation();
-    const newName = prompt('Enter new document name:', currentName);
-    if (newName && newName.trim() !== '' && newName !== currentName) {
-      await renameDocument(id, newName.trim());
-      refreshDocList();
-    }
+    openRenameModal(
+      currentName,
+      language === 'ko' ? '문서 이름을 입력하세요' : 'Rename document',
+      async (newName) => {
+        if (newName !== currentName) {
+          await renameDocument(id, newName);
+          refreshDocList();
+        }
+        closeRenameModal();
+      }
+    );
   };
 
   const handleFileUpload = async (file) => {
@@ -597,6 +619,15 @@ function App() {
           <p style={{ color: '#94a3b8' }}>This might take a few seconds for large files.</p>
         </div>
       )}
+
+      {/* Rename Modal */}
+      <RenameModal
+        isOpen={renameModal.isOpen}
+        currentName={renameModal.currentName}
+        label={renameModal.label}
+        onConfirm={renameModal.onConfirm}
+        onCancel={closeRenameModal}
+      />
     </div>
   );
 }
