@@ -22,7 +22,15 @@ function App() {
   const [documentName, setDocumentName] = useState('');
 
   // Tool state
-  const [toolMode, setToolMode] = useState('scroll'); // 'scroll', 'pen', 'lasso'
+  const [toolMode, setToolMode] = useState('scroll'); // 'scroll', 'pen', 'lasso', 'eraser'
+  const previousToolRef = useRef('scroll');
+
+  const handleSetToolMode = (newMode) => {
+    if (newMode === 'lasso' && toolMode !== 'lasso') {
+      previousToolRef.current = toolMode;
+    }
+    setToolMode(newMode);
+  };
   const [penColor, setPenColor] = useState('#ef4444');
   const [penThickness, setPenThickness] = useState(4);
   const [isDragging, setIsDragging] = useState(false);
@@ -262,7 +270,7 @@ function App() {
   };
 
   const handleLassoComplete = async (rect) => {
-    setToolMode('scroll'); // Revert tool
+    handleSetToolMode(previousToolRef.current); // Revert to previous tool
     
     // Wait for React to flush the DOM update and remove LassoCanvas
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -459,14 +467,14 @@ function App() {
           <ToolbarButton 
             icon={<MousePointer2 size={28} />} 
             active={toolMode === 'scroll'} 
-            onClick={() => setToolMode('scroll')} 
+            onClick={() => handleSetToolMode('scroll')} 
             title="Scroll/Pan"
           />
           <div style={{ position: 'relative' }}>
             <ToolbarButton 
               icon={<Pen size={28} />} 
               active={toolMode === 'pen'} 
-              onClick={() => setToolMode('pen')} 
+              onClick={() => handleSetToolMode('pen')} 
               title="Pen Tool"
             />
             {toolMode === 'pen' && (
@@ -486,13 +494,13 @@ function App() {
           <ToolbarButton 
             icon={<Eraser size={28} />} 
             active={toolMode === 'eraser'} 
-            onClick={() => setToolMode('eraser')} 
+            onClick={() => handleSetToolMode('eraser')} 
             title="Eraser Tool"
           />
           <ToolbarButton 
             icon={<Crop size={28} />} 
             active={toolMode === 'lasso'} 
-            onClick={() => setToolMode('lasso')} 
+            onClick={() => handleSetToolMode('lasso')} 
             title="Lasso Tool"
           />
           <ToolbarButton 
@@ -530,7 +538,7 @@ function App() {
       {toolMode === 'lasso' && (
         <LassoCanvas 
           onSelectionComplete={handleLassoComplete} 
-          onCancel={() => setToolMode('scroll')} 
+          onCancel={() => handleSetToolMode(previousToolRef.current)} 
         />
       )}
 
