@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2 } from 'lucide-react';
+import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { LassoCanvas } from './components/LassoCanvas';
 import { AiDialog } from './components/AiDialog';
 import { ApiKeyModal } from './components/ApiKeyModal';
@@ -28,6 +29,10 @@ function App() {
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const lastPanPoint = useRef(null);
+  
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   
   // Capture state
   const [selectedArea, setSelectedArea] = useState(null);
@@ -202,6 +207,60 @@ function App() {
     }
   };
 
+  const handleExport = async (format) => {
+    setShowExportMenu(false);
+    setIsExporting(true);
+    
+    // Wait for React to render the loading state
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      const toolbar = document.getElementById('floating-toolbar');
+      if (toolbar) toolbar.style.display = 'none';
+
+      // We capture the contentRef which contains everything
+      const canvas = await html2canvas(contentRef.current, {
+        windowWidth: contentRef.current.scrollWidth,
+        windowHeight: contentRef.current.scrollHeight,
+        width: contentRef.current.scrollWidth,
+        height: contentRef.current.scrollHeight,
+        backgroundColor: pdfFile ? '#ffffff' : '#e2e8f0', // Match background
+        useCORS: true,
+      });
+
+      if (toolbar) toolbar.style.display = 'flex';
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const filename = `${documentName || 'Note'}_${new Date().toISOString().split('T')[0]}`;
+
+      if (format === 'png') {
+        const link = document.createElement('a');
+        link.download = `${filename}.png`;
+        link.href = dataUrl;
+        link.click();
+      } else if (format === 'pdf') {
+        // Calculate aspect ratio
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const orientation = imgWidth > imgHeight ? 'l' : 'p';
+        
+        const pdf = new jsPDF({
+          orientation: orientation,
+          unit: 'px',
+          format: [imgWidth, imgHeight]
+        });
+        
+        pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight);
+        pdf.save(`${filename}.pdf`);
+      }
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Export failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleLassoComplete = async (rect) => {
     setToolMode('scroll'); // Revert tool
     
@@ -246,7 +305,7 @@ function App() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '3rem', maxWidth: '1000px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <h1 style={{ color: '#1e293b', marginBottom: '2rem' }}>밥사주재홍 Workspace</h1>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
+          <div className="home-grid">
             <div 
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -406,23 +465,7 @@ function App() {
 
       {/* Floating Toolbar */}
       {activeDocumentId && (
-        <div 
-          id="floating-toolbar"
-          style={{
-          position: 'fixed',
-          bottom: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: '0.5rem',
-          padding: '0.5rem',
-          borderRadius: '16px',
-          backgroundColor: 'var(--panel-bg)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-          zIndex: 1000
-        }}>
+        <div id="floating-toolbar" className="toolbar-container">
           <ToolbarButton 
             icon={<Home size={28} />} 
             active={false} 
@@ -478,6 +521,35 @@ function App() {
             onClick={() => setToolMode('lasso')} 
             title="Lasso Tool"
           />
+          <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
+          <div style={{ position: 'relative' }}>
+            <ToolbarButton 
+              icon={<Download size={28} />} 
+              active={showExportMenu} 
+              onClick={() => setShowExportMenu(!showExportMenu)} 
+              title="Export"
+            />
+            {showExportMenu && (
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '0.5rem', backgroundColor: 'var(--panel-bg)', padding: '0.5rem', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                <button 
+                  onClick={() => handleExport('png')}
+                  style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                  Export as PNG
+                </button>
+                <button 
+                  onClick={() => handleExport('pdf')}
+                  style={{ background: 'transparent', border: 'none', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer', whiteSpace: 'nowrap', borderRadius: '6px' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                  Export as PDF
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -496,6 +568,15 @@ function App() {
           rect={selectedArea} 
           onClose={handleCloseDialog} 
         />
+      )}
+
+      {/* Loading Overlay */}
+      {isExporting && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', backdropFilter: 'blur(4px)' }}>
+          <Loader2 size={48} className="animate-spin" style={{ marginBottom: '1rem' }} />
+          <h2>Exporting Document...</h2>
+          <p style={{ color: '#94a3b8' }}>This might take a few seconds for large files.</p>
+        </div>
       )}
     </div>
   );
