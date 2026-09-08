@@ -382,11 +382,11 @@ function App() {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
-      <button
+      <button 
         onClick={() => setIsSettingsOpen(true)}
-        style={{ position: 'fixed', top: '1.25rem', right: '1.25rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)', transition: 'transform 0.2s ease' }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'rotate(45deg)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'rotate(0deg)'}
+        style={{ position: 'fixed', top: '1.25rem', left: '1.25rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)', opacity: 0.3, transition: 'all 0.3s ease' }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(45deg)'; e.currentTarget.style.opacity = '1'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(0deg)'; e.currentTarget.style.opacity = '0.3'; }}
         title={language === 'ko' ? '설정' : 'Settings'}
       >
         <Settings size={24} />
