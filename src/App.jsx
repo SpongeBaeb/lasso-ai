@@ -341,7 +341,7 @@ function App() {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#e2e8f0', color: '#0f172a' }}>
       <button 
         onClick={toggleLanguage}
-        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'rgba(255,255,255,0.8)', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backdropFilter: 'blur(4px)', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}
+        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'rgba(255,255,255,0.8)', color: '#0f172a', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backdropFilter: 'blur(4px)', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}
       >
         {language === 'en' ? '🇰🇷 한국어' : '🇺🇸 English'}
       </button>
