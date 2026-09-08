@@ -6,6 +6,17 @@ export const initGemini = (apiKey) => {
   genAI = new GoogleGenerativeAI(apiKey);
 };
 
+export const validateGeminiApiKey = async (apiKey) => {
+  try {
+    const testGenAI = new GoogleGenerativeAI(apiKey);
+    const model = testGenAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    await model.generateContent("hi");
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 export const askQuestionWithImage = async (question, base64Image) => {
   if (!genAI) {
     throw new Error('Gemini API is not initialized. Please provide an API key.');

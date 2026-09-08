@@ -48,3 +48,7 @@ export const deleteDocument = async (id) => {
   await localforage.removeItem(`doc_${id}`);
   await localforage.removeItem(`ann_${id}`);
 };
+
+export const clearAllDocuments = async () => {
+  await localforage.clear();
+};

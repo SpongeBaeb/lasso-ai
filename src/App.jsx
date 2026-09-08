@@ -1,20 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2, Eraser } from 'lucide-react';
+import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2, Eraser, Settings, LassoSelect } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { LassoCanvas } from './components/LassoCanvas';
 import { AiDialog } from './components/AiDialog';
-import { ApiKeyModal } from './components/ApiKeyModal';
+import { SettingsModal } from './components/SettingsModal';
 import { PdfViewer } from './components/PdfViewer';
 import { AnnotationCanvas } from './components/AnnotationCanvas';
 import { RenameModal } from './components/RenameModal';
 import { initGemini } from './lib/gemini';
-import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, deleteDocument, renameDocument } from './lib/storage';
+import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, deleteDocument, renameDocument, clearAllDocuments } from './lib/storage';
+import lassoImg from './assets/lasso.png';
 
 function App() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
   const [language, setLanguage] = useState(localStorage.getItem('app_lang') || 'en');
-  const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || "s notes");
+  const [workspaceName, setWorkspaceName] = useState(localStorage.getItem('workspace_name') || "Bapsaju Jaehong");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleClearData = async () => {
+    if (window.confirm(language === 'en' ? 'Are you sure you want to delete all saved notes? This cannot be undone.' : '모든 노트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      await clearAllDocuments();
+      setSavedDocs([]);
+      setApiKey('');
+      localStorage.removeItem('gemini_api_key');
+      setIsSettingsOpen(false);
+    }
+  };
 
   // Rename modal state
   const [renameModal, setRenameModal] = useState({ isOpen: false, currentName: '', label: '', onConfirm: null });
@@ -69,7 +81,7 @@ function App() {
       noSaved: "아직 저장된 문서가 없습니다."
     }
   }[language];
-  
+
   // Storage state
   const [savedDocs, setSavedDocs] = useState([]);
   const [activeDocumentId, setActiveDocumentId] = useState(null);
@@ -94,15 +106,15 @@ function App() {
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const lastPanPoint = useRef(null);
-  
+
   // Export state
   const [isExporting, setIsExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  
+
   // Capture state
   const [selectedArea, setSelectedArea] = useState(null);
   const [imageBase64, setImageBase64] = useState(null);
-  
+
   const contentRef = useRef(null);
 
   useEffect(() => {
@@ -282,7 +294,7 @@ function App() {
   const handleExport = async (format) => {
     setShowExportMenu(false);
     setIsExporting(true);
-    
+
     // Wait for React to render the loading state
     await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -315,13 +327,13 @@ function App() {
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
         const orientation = imgWidth > imgHeight ? 'l' : 'p';
-        
+
         const pdf = new jsPDF({
           orientation: orientation,
           unit: 'px',
           format: [imgWidth, imgHeight]
         });
-        
+
         pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight);
         pdf.save(`${filename}.pdf`);
       }
@@ -335,10 +347,10 @@ function App() {
 
   const handleLassoComplete = async (rect) => {
     handleSetToolMode(previousToolRef.current); // Revert to previous tool
-    
+
     // Wait for React to flush the DOM update and remove LassoCanvas
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     try {
       // Hide toolbar to prevent it from being captured if it overlaps
       const toolbar = document.getElementById('floating-toolbar');
@@ -370,22 +382,39 @@ function App() {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
-      <button 
-        onClick={toggleLanguage}
-        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem 1.2rem', borderRadius: '24px', cursor: 'pointer', fontWeight: '700', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)' }}
+      <button
+        onClick={() => setIsSettingsOpen(true)}
+        style={{ position: 'fixed', top: '1.25rem', right: '1.25rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)', transition: 'transform 0.2s ease' }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'rotate(45deg)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'rotate(0deg)'}
+        title={language === 'ko' ? '설정' : 'Settings'}
       >
-        {language === 'en' ? '🇰🇷 한국어' : '🇺🇸 English'}
+        <Settings size={24} />
       </button>
 
-      {!apiKey && <ApiKeyModal onSave={handleSaveApiKey} />}
-      
+      {(!apiKey || isSettingsOpen) && (
+        <SettingsModal
+          onClose={() => setIsSettingsOpen(false)}
+          apiKey={apiKey}
+          onSaveApiKey={handleSaveApiKey}
+          language={language}
+          onToggleLanguage={toggleLanguage}
+          onClearData={handleClearData}
+          allowClose={!!apiKey}
+        />
+      )}
+
       {/* Home Screen */}
       {!activeDocumentId && (
         <div className="home-container">
-          <h1 className="home-title" onClick={handleRenameWorkspace} style={{ cursor: 'pointer' }} title={language === 'ko' ? '클릭하여 이름 변경' : 'Click to rename'}>{t.title} ✏️</h1>
-          
+          <h1 className="home-title" onClick={handleRenameWorkspace} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }} title={language === 'ko' ? '클릭하여 이름 변경' : 'Click to rename'}>
+            <img src={lassoImg} alt="Lasso" style={{ height: '1.2em', objectFit: 'contain' }} />
+            {t.title}
+            <Pen size={20} color="var(--text-muted)" style={{ opacity: 0.6 }} />
+          </h1>
+
           <div className="home-grid">
-            <div 
+            <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -400,7 +429,7 @@ function App() {
               </label>
             </div>
 
-            <div 
+            <div
               onClick={handleCreateBlankNote}
               className="home-card blank-note-card"
             >
@@ -419,7 +448,7 @@ function App() {
           ) : (
             <div className="saved-docs-grid">
               {savedDocs.map(doc => (
-                <div 
+                <div
                   key={doc.id}
                   onClick={() => loadDoc(doc.id)}
                   className="glass"
@@ -441,14 +470,14 @@ function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <FileText size={32} color="var(--primary)" />
                     <div style={{ display: 'flex', gap: '0.2rem' }}>
-                      <button 
+                      <button
                         onClick={(e) => handleRenameDoc(doc.id, doc.name, e)}
                         style={{ background: 'transparent', border: 'none', padding: '0.4rem', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '50%' }}
                         title="Rename"
                       >
                         <Pen size={16} />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleDeleteDoc(doc.id, e)}
                         style={{ background: 'transparent', border: 'none', padding: '0.4rem', color: '#E29578', cursor: 'pointer', borderRadius: '50%' }}
                         title="Delete"
@@ -472,11 +501,11 @@ function App() {
 
       {/* Main Workspace Area */}
       {activeDocumentId && (
-        <div 
-          style={{ 
-            flex: 1, 
-            position: 'relative', 
-            overflow: 'auto', 
+        <div
+          style={{
+            flex: 1,
+            position: 'relative',
+            overflow: 'auto',
             backgroundColor: pdfFile ? 'transparent' : 'white',
             cursor: (toolMode === 'scroll' && !pdfFile) ? (isPanning ? 'grabbing' : 'grab') : 'default',
             touchAction: toolMode === 'scroll' && !pdfFile ? 'none' : 'auto'
@@ -494,12 +523,12 @@ function App() {
                 <PdfViewer file={pdfFile} />
               </div>
             )}
-            
+
             {/* The Annotation Layer */}
-            <AnnotationCanvas 
-              isActive={toolMode === 'pen'} 
+            <AnnotationCanvas
+              isActive={toolMode === 'pen'}
               isErasing={toolMode === 'eraser'}
-              containerRef={contentRef} 
+              containerRef={contentRef}
               paths={annotations}
               onPathsChange={handlePathsChange}
               penColor={penColor}
@@ -513,58 +542,58 @@ function App() {
       {/* Floating Toolbar */}
       {activeDocumentId && (
         <div id="floating-toolbar" className="toolbar-container">
-          <ToolbarButton 
-            icon={<Home size={28} />} 
-            active={false} 
-            onClick={closeDoc} 
+          <ToolbarButton
+            icon={<Home size={28} />}
+            active={false}
+            onClick={closeDoc}
             title="Home"
           />
           <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
-          <ToolbarButton 
-            icon={<Undo2 size={24} />} 
-            active={false} 
-            onClick={handleUndo} 
+          <ToolbarButton
+            icon={<Undo2 size={24} />}
+            active={false}
+            onClick={handleUndo}
             title="Undo (Ctrl+Z)"
             disabled={annotations.length === 0}
           />
-          <ToolbarButton 
-            icon={<Redo2 size={24} />} 
-            active={false} 
-            onClick={handleRedo} 
+          <ToolbarButton
+            icon={<Redo2 size={24} />}
+            active={false}
+            onClick={handleRedo}
             title="Redo (Ctrl+Y)"
             disabled={redoStack.length === 0}
           />
           <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
-          <ToolbarButton 
-            icon={<MousePointer2 size={28} />} 
-            active={toolMode === 'scroll'} 
-            onClick={() => handleSetToolMode('scroll')} 
+          <ToolbarButton
+            icon={<MousePointer2 size={28} />}
+            active={toolMode === 'scroll'}
+            onClick={() => handleSetToolMode('scroll')}
             title="Scroll/Pan"
           />
           <div style={{ position: 'relative' }}>
-            <ToolbarButton 
-              icon={<Pen size={28} />} 
-              active={toolMode === 'pen'} 
-              onClick={() => handleSetToolMode('pen')} 
+            <ToolbarButton
+              icon={<Pen size={28} />}
+              active={toolMode === 'pen'}
+              onClick={() => handleSetToolMode('pen')}
               title="Pen Tool"
             />
           </div>
-          <ToolbarButton 
-            icon={<Eraser size={28} />} 
-            active={toolMode === 'eraser'} 
-            onClick={() => handleSetToolMode('eraser')} 
+          <ToolbarButton
+            icon={<Eraser size={28} />}
+            active={toolMode === 'eraser'}
+            onClick={() => handleSetToolMode('eraser')}
             title="Eraser Tool"
           />
-          <ToolbarButton 
-            icon={<Crop size={28} />} 
-            active={toolMode === 'lasso'} 
-            onClick={() => handleSetToolMode('lasso')} 
+          <ToolbarButton
+            icon={<LassoSelect size={28} />}
+            active={toolMode === 'lasso'}
+            onClick={() => handleSetToolMode('lasso')}
             title="Lasso Tool"
           />
-          <ToolbarButton 
-            icon={<Download size={28} />} 
-            active={showExportMenu} 
-            onClick={() => setShowExportMenu(!showExportMenu)} 
+          <ToolbarButton
+            icon={<Download size={28} />}
+            active={showExportMenu}
+            onClick={() => setShowExportMenu(!showExportMenu)}
             title="Export"
           />
         </div>
@@ -595,18 +624,18 @@ function App() {
 
       {/* Lasso Overlay */}
       {toolMode === 'lasso' && (
-        <LassoCanvas 
-          onSelectionComplete={handleLassoComplete} 
-          onCancel={() => handleSetToolMode(previousToolRef.current)} 
+        <LassoCanvas
+          onSelectionComplete={handleLassoComplete}
+          onCancel={() => handleSetToolMode(previousToolRef.current)}
         />
       )}
 
       {/* AI Dialog */}
       {selectedArea && imageBase64 && (
-        <AiDialog 
-          imageBase64={imageBase64} 
-          rect={selectedArea} 
-          onClose={handleCloseDialog} 
+        <AiDialog
+          imageBase64={imageBase64}
+          rect={selectedArea}
+          onClose={handleCloseDialog}
           language={language}
         />
       )}
@@ -634,7 +663,7 @@ function App() {
 
 function ToolbarButton({ icon, active, onClick, title, disabled }) {
   return (
-    <button 
+    <button
       onClick={disabled ? null : onClick}
       title={title}
       disabled={disabled}
