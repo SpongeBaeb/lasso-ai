@@ -6,10 +6,29 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { askQuestionWithImage } from '../lib/gemini';
 
-export function AiDialog({ imageBase64, rect, onClose }) {
+export function AiDialog({ imageBase64, rect, onClose, language = 'en' }) {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
+
+  const t = {
+    en: {
+      askAi: "Ask AI",
+      thinking: "Thinking...",
+      selectQuestion: "Select a question to ask.",
+      placeholder: "Ask something...",
+      explain: "Explain",
+      transcribe: "Transcribe"
+    },
+    ko: {
+      askAi: "AI에게 묻기",
+      thinking: "생각 중...",
+      selectQuestion: "질문을 입력하세요.",
+      placeholder: "무엇이든 물어보세요...",
+      explain: "설명하기",
+      transcribe: "텍스트 변환"
+    }
+  }[language];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +36,8 @@ export function AiDialog({ imageBase64, rect, onClose }) {
 
     setLoading(true);
     try {
-      const answer = await askQuestionWithImage(question, imageBase64);
+      const finalQuestion = language === 'ko' ? `${question} (Please reply in Korean)` : question;
+      const answer = await askQuestionWithImage(finalQuestion, imageBase64);
       setResponse(answer);
     } catch (err) {
       console.error(err);
@@ -30,7 +50,10 @@ export function AiDialog({ imageBase64, rect, onClose }) {
   const handleTranscribe = async () => {
     setLoading(true);
     try {
-      const answer = await askQuestionWithImage("Transcribe the handwriting in this image exactly as written. Output only the text.", imageBase64);
+      const prompt = language === 'ko' 
+        ? "이 이미지의 필기를 있는 그대로 정확하게 전사하세요. 텍스트만 출력하세요." 
+        : "Transcribe the handwriting in this image exactly as written. Output only the text.";
+      const answer = await askQuestionWithImage(prompt, imageBase64);
       setResponse(answer);
     } catch (err) {
       console.error(err);
@@ -43,7 +66,10 @@ export function AiDialog({ imageBase64, rect, onClose }) {
   const handleExplain = async () => {
     setLoading(true);
     try {
-      const answer = await askQuestionWithImage("Explain the contents of this image in detail. If there are math equations, solve and explain them.", imageBase64);
+      const prompt = language === 'ko'
+        ? "이 이미지의 내용을 자세히 설명하세요. 수학 방정식이 있다면 풀이와 함께 설명하세요. 답변은 한국어로 작성해주세요."
+        : "Explain the contents of this image in detail. If there are math equations, solve and explain them.";
+      const answer = await askQuestionWithImage(prompt, imageBase64);
       setResponse(answer);
     } catch (err) {
       console.error(err);
@@ -91,8 +117,8 @@ export function AiDialog({ imageBase64, rect, onClose }) {
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1rem' }}>Ask AI</h3>
-        <button onClick={onClose} style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', background: 'transparent', border: 'none' }}>✕</button>
+        <h3 style={{ margin: 0, fontSize: '1rem' }}>{t.askAi}</h3>
+        <button onClick={onClose} style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer' }}>✕</button>
       </div>
 
       <div style={{ marginBottom: '1rem', maxHeight: '120px', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
@@ -114,7 +140,7 @@ export function AiDialog({ imageBase64, rect, onClose }) {
           >
             {response}
           </ReactMarkdown>
-        ) : (loading ? <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}><Loader2 className="animate-spin" size={16} /> Thinking...</div> : 'Select a question to ask.')}
+        ) : (loading ? <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}><Loader2 className="animate-spin" size={16} /> {t.thinking}</div> : t.selectQuestion)}
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
@@ -122,7 +148,7 @@ export function AiDialog({ imageBase64, rect, onClose }) {
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask something..."
+          placeholder={t.placeholder}
           style={{
             flex: 1,
             padding: '0.5rem',
@@ -152,7 +178,7 @@ export function AiDialog({ imageBase64, rect, onClose }) {
           onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
-          Explain
+          {t.explain}
         </button>
         <button 
           type="button"
@@ -162,7 +188,7 @@ export function AiDialog({ imageBase64, rect, onClose }) {
           onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
-          Transcribe
+          {t.transcribe}
         </button>
       </div>
     </div>

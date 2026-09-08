@@ -12,6 +12,38 @@ import { saveDocumentMetadata, saveAnnotations, getDocument, getAllDocuments, de
 
 function App() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+  const [language, setLanguage] = useState(localStorage.getItem('app_lang') || 'en');
+
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'ko' : 'en';
+    setLanguage(newLang);
+    localStorage.setItem('app_lang', newLang);
+  };
+
+  const t = {
+    en: {
+      title: "밥사주재홍 Workspace",
+      upload: "Upload a PDF",
+      uploadDesc: "Drag and drop a PDF file here.",
+      choose: "Choose PDF",
+      blank: "Blank Note",
+      blankDesc: "Start scribbling on a blank whiteboard.",
+      create: "Create Note",
+      saved: "Saved Documents",
+      noSaved: "No saved documents yet."
+    },
+    ko: {
+      title: "밥사주재홍 워크스페이스",
+      upload: "PDF 업로드",
+      uploadDesc: "여기에 PDF 파일을 드래그 앤 드롭하세요.",
+      choose: "PDF 선택",
+      blank: "새 빈 노트",
+      blankDesc: "빈 화이트보드에 자유롭게 메모하세요.",
+      create: "노트 생성",
+      saved: "저장된 문서",
+      noSaved: "아직 저장된 문서가 없습니다."
+    }
+  }[language];
   
   // Storage state
   const [savedDocs, setSavedDocs] = useState([]);
@@ -306,12 +338,19 @@ function App() {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#e2e8f0', color: '#0f172a' }}>
+      <button 
+        onClick={toggleLanguage}
+        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'rgba(255,255,255,0.8)', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backdropFilter: 'blur(4px)', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}
+      >
+        {language === 'en' ? '🇰🇷 한국어' : '🇺🇸 English'}
+      </button>
+
       {!apiKey && <ApiKeyModal onSave={handleSaveApiKey} />}
       
       {/* Home Screen */}
       {!activeDocumentId && (
         <div className="home-container">
-          <h1 className="home-title">밥사주재홍 Workspace</h1>
+          <h1 className="home-title">{t.title}</h1>
           
           <div className="home-grid">
             <div 
@@ -320,11 +359,11 @@ function App() {
               onDrop={handleDrop}
               className={`home-card upload-card ${isDragging ? 'dragging' : ''}`}
             >
-              <h2>Upload a PDF</h2>
-              <p>Drag and drop a PDF file here.</p>
+              <h2>{t.upload}</h2>
+              <p>{t.uploadDesc}</p>
               <label className="primary-btn">
                 <Upload size={20} />
-                Choose PDF
+                {t.choose}
                 <input type="file" accept="application/pdf" onChange={handleFileChange} style={{ display: 'none' }} />
               </label>
             </div>
@@ -333,18 +372,18 @@ function App() {
               onClick={handleCreateBlankNote}
               className="home-card blank-note-card"
             >
-              <h2>Blank Note</h2>
-              <p>Start scribbling on a blank whiteboard.</p>
+              <h2>{t.blank}</h2>
+              <p>{t.blankDesc}</p>
               <button className="dark-btn">
                 <Pen size={20} />
-                Create Note
+                {t.create}
               </button>
             </div>
           </div>
 
-          <h2 className="section-title">Saved Documents</h2>
+          <h2 className="section-title">{t.saved}</h2>
           {savedDocs.length === 0 ? (
-            <p className="empty-text">No saved documents yet.</p>
+            <p className="empty-text">{t.noSaved}</p>
           ) : (
             <div className="saved-docs-grid">
               {savedDocs.map(doc => (
@@ -548,6 +587,7 @@ function App() {
           imageBase64={imageBase64} 
           rect={selectedArea} 
           onClose={handleCloseDialog} 
+          language={language}
         />
       )}
 
