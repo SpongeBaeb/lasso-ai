@@ -54,8 +54,8 @@ function App() {
   const [documentName, setDocumentName] = useState('');
 
   // Tool state
-  const [toolMode, setToolMode] = useState('scroll'); // 'scroll', 'pen', 'lasso', 'eraser'
-  const previousToolRef = useRef('scroll');
+  const [toolMode, setToolMode] = useState('pen'); // 'scroll', 'pen', 'lasso', 'eraser'
+  const previousToolRef = useRef('pen');
 
   const handleSetToolMode = (newMode) => {
     if (newMode === 'lasso' && toolMode !== 'lasso') {
@@ -112,6 +112,7 @@ function App() {
       setAnnotations(doc.annotations);
       setDocumentName(doc.name);
       setActiveDocumentId(id);
+      handleSetToolMode('pen');
     }
   };
 
