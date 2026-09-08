@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2 } from 'lucide-react';
+import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2, Eraser } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { LassoCanvas } from './components/LassoCanvas';
 import { AiDialog } from './components/AiDialog';
@@ -419,6 +419,7 @@ function App() {
             {/* The Annotation Layer */}
             <AnnotationCanvas 
               isActive={toolMode === 'pen'} 
+              isErasing={toolMode === 'eraser'}
               containerRef={contentRef} 
               paths={annotations}
               onPathsChange={handlePathsChange}
@@ -482,6 +483,12 @@ function App() {
               </div>
             )}
           </div>
+          <ToolbarButton 
+            icon={<Eraser size={28} />} 
+            active={toolMode === 'eraser'} 
+            onClick={() => setToolMode('eraser')} 
+            title="Eraser Tool"
+          />
           <ToolbarButton 
             icon={<Crop size={28} />} 
             active={toolMode === 'lasso'} 

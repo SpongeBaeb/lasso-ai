@@ -15,7 +15,7 @@ function getSvgPathFromStroke(stroke) {
   return d.join(' ')
 }
 
-export function AnnotationCanvas({ isActive, containerRef, paths = [], onPathsChange, penColor = '#ef4444', penThickness = 4, cameraOffset = {x: 0, y: 0} }) {
+export function AnnotationCanvas({ isActive, isErasing, containerRef, paths = [], onPathsChange, penColor = '#ef4444', penThickness = 4, cameraOffset = {x: 0, y: 0} }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const pathsRef = useRef(paths);
@@ -89,27 +89,58 @@ export function AnnotationCanvas({ isActive, containerRef, paths = [], onPathsCh
     ];
   };
 
+  const erasePaths = (coords) => {
+    const ERASER_RADIUS = 20;
+    let pathsChanged = false;
+    const newPaths = pathsRef.current.filter(path => {
+      const hit = path.points.some(p => {
+        const px = Array.isArray(p) ? p[0] : p.x;
+        const py = Array.isArray(p) ? p[1] : p.y;
+        return Math.hypot(px - coords[0], py - coords[1]) < ERASER_RADIUS;
+      });
+      if (hit) pathsChanged = true;
+      return !hit;
+    });
+
+    if (pathsChanged) {
+      pathsRef.current = newPaths;
+      drawAllPaths(newPaths);
+      if (onPathsChange) onPathsChange(newPaths);
+    }
+  };
+
   const handlePointerDown = (e) => {
-    if (!isActive) return;
+    if (!isActive && !isErasing) return;
     e.target.setPointerCapture(e.pointerId);
     setIsDrawing(true);
     const coords = getCoordinates(e);
-    currentPathRef.current = { color: penColor, thickness: penThickness, points: [coords] };
-    drawAllPaths([...pathsRef.current, currentPathRef.current]);
+
+    if (isErasing) {
+      erasePaths(coords);
+    } else {
+      currentPathRef.current = { color: penColor, thickness: penThickness, points: [coords] };
+      drawAllPaths([...pathsRef.current, currentPathRef.current]);
+    }
   };
 
   const handlePointerMove = (e) => {
-    if (!isActive || !isDrawing || !currentPathRef.current) return;
+    if (!isDrawing) return;
     const coords = getCoordinates(e);
-    currentPathRef.current.points.push(coords);
-    drawAllPaths([...pathsRef.current, currentPathRef.current]);
+    
+    if (isErasing) {
+      erasePaths(coords);
+    } else if (isActive && currentPathRef.current) {
+      currentPathRef.current.points.push(coords);
+      drawAllPaths([...pathsRef.current, currentPathRef.current]);
+    }
   };
 
   const handlePointerUp = (e) => {
-    if (!isActive || !isDrawing) return;
+    if (!isDrawing) return;
     e.target.releasePointerCapture(e.pointerId);
     setIsDrawing(false);
-    if (currentPathRef.current && currentPathRef.current.points.length > 0) {
+    
+    if (!isErasing && currentPathRef.current && currentPathRef.current.points.length > 0) {
       const newPaths = [...pathsRef.current, currentPathRef.current];
       if (onPathsChange) onPathsChange(newPaths);
     }
@@ -129,8 +160,9 @@ export function AnnotationCanvas({ isActive, containerRef, paths = [], onPathsCh
         left: 0,
         width: '100%',
         height: '100%',
-        pointerEvents: isActive ? 'auto' : 'none',
+        pointerEvents: (isActive || isErasing) ? 'auto' : 'none',
         touchAction: 'none',
+        cursor: isErasing ? 'crosshair' : 'default',
         zIndex: 50
       }}
     />
