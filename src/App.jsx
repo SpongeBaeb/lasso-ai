@@ -338,10 +338,10 @@ function App() {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#e2e8f0', color: '#0f172a' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
       <button 
         onClick={toggleLanguage}
-        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'rgba(255,255,255,0.8)', color: '#0f172a', border: '1px solid #cbd5e1', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold', backdropFilter: 'blur(4px)', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}
+        style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem 1.2rem', borderRadius: '24px', cursor: 'pointer', fontWeight: '700', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)' }}
       >
         {language === 'en' ? '🇰🇷 한국어' : '🇺🇸 English'}
       </button>
@@ -394,32 +394,32 @@ function App() {
                   className="glass"
                   style={{
                     backgroundColor: 'white',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
+                    padding: '2rem',
+                    borderRadius: '24px',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1rem',
-                    transition: 'transform 0.2s',
-                    border: '1px solid #cbd5e1',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    gap: '1.2rem',
+                    transition: 'all 0.3s ease',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: 'var(--shadow-soft)'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = 'var(--shadow-medium)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)'; }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <FileText size={32} color="#3b82f6" />
-                    <div>
+                    <FileText size={32} color="var(--primary)" />
+                    <div style={{ display: 'flex', gap: '0.2rem' }}>
                       <button 
                         onClick={(e) => handleRenameDoc(doc.id, doc.name, e)}
-                        style={{ background: 'transparent', border: 'none', padding: '0.25rem', color: '#64748b', cursor: 'pointer' }}
+                        style={{ background: 'transparent', border: 'none', padding: '0.4rem', color: 'var(--text-muted)', cursor: 'pointer', borderRadius: '50%' }}
                         title="Rename"
                       >
                         <Pen size={16} />
                       </button>
                       <button 
                         onClick={(e) => handleDeleteDoc(doc.id, e)}
-                        style={{ background: 'transparent', border: 'none', padding: '0.25rem', color: '#ef4444', cursor: 'pointer' }}
+                        style={{ background: 'transparent', border: 'none', padding: '0.4rem', color: '#E29578', cursor: 'pointer', borderRadius: '50%' }}
                         title="Delete"
                       >
                         <Trash2 size={18} />
@@ -427,8 +427,8 @@ function App() {
                     </div>
                   </div>
                   <div>
-                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</h3>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</h3>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                       {new Date(doc.lastModified).toLocaleDateString()}
                     </p>
                   </div>
@@ -518,14 +518,14 @@ function App() {
               title="Pen Tool"
             />
             {toolMode === 'pen' && (
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '0.5rem', backgroundColor: 'var(--panel-bg)', padding: '0.5rem', borderRadius: '12px', display: 'flex', gap: '0.5rem', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                {['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#1e293b'].map(c => (
-                  <button key={c} onClick={() => setPenColor(c)} style={{ width: '24px', height: '24px', borderRadius: '12px', backgroundColor: c, border: penColor === c ? '2px solid white' : '2px solid transparent', padding: 0, cursor: 'pointer' }} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: '1rem', backgroundColor: 'var(--panel-bg)', padding: '0.75rem', borderRadius: '24px', display: 'flex', gap: '0.75rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-medium)' }}>
+                {['#4A3F35', '#E29578', '#A3B18A', '#E2C275', '#A98467'].map(c => (
+                  <button key={c} onClick={() => setPenColor(c)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: c, border: penColor === c ? '3px solid white' : '3px solid transparent', padding: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
                 ))}
                 <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.2rem' }} />
                 {[2, 4, 8].map(t => (
-                  <button key={t} onClick={() => setPenThickness(t)} style={{ width: '24px', height: '24px', borderRadius: '4px', backgroundColor: 'transparent', border: penThickness === t ? '1px solid white' : '1px solid transparent', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                    <div style={{ width: '12px', height: `${t}px`, backgroundColor: 'white', borderRadius: '2px' }} />
+                  <button key={t} onClick={() => setPenThickness(t)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: 'white', border: penThickness === t ? '2px solid var(--primary)' : '2px solid transparent', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <div style={{ width: '14px', height: `${t}px`, backgroundColor: 'var(--text-main)', borderRadius: '2px' }} />
                   </button>
                 ))}
               </div>
@@ -616,13 +616,19 @@ function ToolbarButton({ icon, active, onClick, title, disabled }) {
         justifyContent: 'center',
         width: '56px',
         height: '56px',
-        borderRadius: '12px',
+        borderRadius: '20px',
         border: 'none',
-        backgroundColor: active ? '#3b82f6' : 'transparent',
-        color: disabled ? '#475569' : (active ? 'white' : '#cbd5e1'),
+        backgroundColor: active ? 'var(--primary)' : 'transparent',
+        color: disabled ? 'rgba(74, 63, 53, 0.3)' : (active ? 'white' : 'var(--text-muted)'),
         cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'all 0.2s',
         opacity: disabled ? 0.5 : 1
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled && !active) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled && !active) e.currentTarget.style.backgroundColor = 'transparent';
       }}
     >
       {icon}

@@ -112,26 +112,27 @@ export function AiDialog({ imageBase64, rect, onClose, language = 'en' }) {
         zIndex: 10000,
         display: 'flex',
         flexDirection: 'column',
-        padding: '1rem',
+        padding: '1.5rem',
         boxSizing: 'border-box'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, fontSize: '1rem' }}>{t.askAi}</h3>
-        <button onClick={onClose} style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer' }}>✕</button>
+        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>{t.askAi}</h3>
+        <button onClick={onClose} style={{ padding: '0.4rem', borderRadius: '50%', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(139,115,85,0.1)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>✕</button>
       </div>
 
-      <div style={{ marginBottom: '1rem', maxHeight: '120px', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+      <div style={{ marginBottom: '1.2rem', maxHeight: '120px', overflow: 'hidden', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: 'inset 0 2px 4px rgba(139,115,85,0.05)' }}>
         <img src={imageBase64} alt="Selected area" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
       </div>
 
       <div style={{ 
         flex: 1, 
         overflowY: 'auto', 
-        marginBottom: '1rem',
+        marginBottom: '1.2rem',
         maxHeight: '200px',
-        fontSize: '0.9rem',
-        color: response?.startsWith('Error:') ? '#ef4444' : '#e2e8f0'
+        fontSize: '0.95rem',
+        color: response?.startsWith('Error:') ? '#ef4444' : 'var(--text-main)',
+        lineHeight: 1.6
       }}>
         {response ? (
           <ReactMarkdown 
@@ -151,32 +152,34 @@ export function AiDialog({ imageBase64, rect, onClose, language = 'en' }) {
           placeholder={t.placeholder}
           style={{
             flex: 1,
-            padding: '0.5rem',
-            borderRadius: '6px',
+            padding: '0.75rem 1rem',
+            borderRadius: '20px',
             border: '1px solid var(--border-color)',
-            background: 'rgba(0,0,0,0.2)',
-            color: 'white',
-            outline: 'none'
+            background: 'white',
+            color: 'var(--text-main)',
+            outline: 'none',
+            boxShadow: 'inset 0 2px 4px rgba(139,115,85,0.05)',
+            fontFamily: 'inherit'
           }}
           disabled={loading}
         />
         <button 
           type="submit" 
           disabled={loading || !question.trim()}
-          style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', backgroundColor: question.trim() ? 'var(--primary)' : 'white', color: question.trim() ? 'white' : 'var(--text-muted)', border: '1px solid var(--border-color)' }}
         >
-          <Send size={16} />
+          <Send size={18} />
         </button>
       </form>
 
-      <div style={{ display: 'flex', marginTop: '0.5rem', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', marginTop: '0.75rem', gap: '0.5rem' }}>
         <button 
           type="button"
           onClick={handleExplain} 
           disabled={loading}
-          style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem', backgroundColor: 'transparent', color: '#94a3b8', border: '1px dashed var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', fontWeight: '600', backgroundColor: 'rgba(226,149,120,0.1)', color: 'var(--primary)', border: 'none', borderRadius: '16px', cursor: 'pointer' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(226,149,120,0.2)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(226,149,120,0.1)'}
         >
           {t.explain}
         </button>
@@ -184,9 +187,9 @@ export function AiDialog({ imageBase64, rect, onClose, language = 'en' }) {
           type="button"
           onClick={handleTranscribe} 
           disabled={loading}
-          style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem', backgroundColor: 'transparent', color: '#94a3b8', border: '1px dashed var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem', fontWeight: '600', backgroundColor: 'white', color: 'var(--text-muted)', border: '1px solid var(--border-color)', borderRadius: '16px', cursor: 'pointer' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#FAF5F0'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
         >
           {t.transcribe}
         </button>
