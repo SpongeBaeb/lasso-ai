@@ -18,7 +18,10 @@
     "perfect-freehand": "^1.2.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-pdf": "^10.5.0"
+    "react-markdown": "^10.1.0",
+    "react-pdf": "^10.5.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

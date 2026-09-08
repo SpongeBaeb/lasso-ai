@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { Send, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { askQuestionWithImage } from '../lib/gemini';
 
 export function AiDialog({ imageBase64, rect, onClose }) {
@@ -90,7 +94,14 @@ export function AiDialog({ imageBase64, rect, onClose }) {
         fontSize: '0.9rem',
         color: response?.startsWith('Error:') ? '#ef4444' : '#e2e8f0'
       }}>
-        {response ? response : (loading ? <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}><Loader2 className="animate-spin" size={16} /> Thinking...</div> : 'Select a question to ask.')}
+        {response ? (
+          <ReactMarkdown 
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {response}
+          </ReactMarkdown>
+        ) : (loading ? <div style={{display:'flex', alignItems:'center', gap:'0.5rem'}}><Loader2 className="animate-spin" size={16} /> Thinking...</div> : 'Select a question to ask.')}
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
