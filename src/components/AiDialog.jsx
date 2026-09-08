@@ -40,6 +40,19 @@ export function AiDialog({ imageBase64, rect, onClose }) {
     }
   };
 
+  const handleExplain = async () => {
+    setLoading(true);
+    try {
+      const answer = await askQuestionWithImage("Explain the contents of this image in detail. If there are math equations, solve and explain them.", imageBase64);
+      setResponse(answer);
+    } catch (err) {
+      console.error(err);
+      setResponse(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Position the dialog near the lasso selection
   // Fallback to center if rect is missing or it goes offscreen
   let top = '50%';
@@ -130,14 +143,26 @@ export function AiDialog({ imageBase64, rect, onClose }) {
         </button>
       </form>
 
-      <div style={{ display: 'flex', marginTop: '0.5rem' }}>
+      <div style={{ display: 'flex', marginTop: '0.5rem', gap: '0.5rem' }}>
+        <button 
+          type="button"
+          onClick={handleExplain} 
+          disabled={loading}
+          style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem', backgroundColor: 'transparent', color: '#94a3b8', border: '1px dashed var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+        >
+          Explain
+        </button>
         <button 
           type="button"
           onClick={handleTranscribe} 
           disabled={loading}
-          style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem', backgroundColor: 'transparent', color: '#94a3b8', border: '1px dashed var(--border-color)' }}
+          style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem', backgroundColor: 'transparent', color: '#94a3b8', border: '1px dashed var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
         >
-          Transcribe Handwriting
+          Transcribe
         </button>
       </div>
     </div>
