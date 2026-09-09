@@ -388,12 +388,21 @@ function App() {
       const toolbar = document.getElementById('floating-toolbar');
       if (toolbar) toolbar.style.display = 'none';
 
-      const canvas = await html2canvas(document.body, {
-        x: rect.x,
-        y: rect.y,
+      const content = contentRef.current;
+      if (!content) return;
+
+      const bounds = content.getBoundingClientRect();
+      
+      // Calculate the crop coordinates relative to the scrollable content's top-left corner
+      const cropX = (rect.x - bounds.left) + content.scrollLeft;
+      const cropY = (rect.y - bounds.top) + content.scrollTop;
+
+      const canvas = await html2canvas(content, {
+        x: cropX,
+        y: cropY,
         width: rect.width,
         height: rect.height,
-        backgroundColor: '#e2e8f0', // Match background
+        backgroundColor: '#f8f4eb', // Match new cozy background
         useCORS: true,
       });
 
