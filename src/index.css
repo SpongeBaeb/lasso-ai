@@ -39,15 +39,22 @@ body {
   -webkit-touch-callout: none; /* Prevent long-press callout on iOS */
 }
 
-/* Prevent ALL elements from being draggable on iOS/iPad Safari */
+/* Prevent ALL elements from being draggable or selectable on iOS/iPad Safari */
 *, *::before, *::after {
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection only in actual input fields */
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 
 img, svg, canvas, button, a {
   -webkit-user-drag: none;
-  user-select: none;
   -webkit-touch-callout: none;
   draggable: false;
 }
