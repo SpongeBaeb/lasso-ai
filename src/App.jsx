@@ -119,6 +119,33 @@ function App() {
   const contentRef = useRef(null);
 
   useEffect(() => {
+    if (activeDocumentId) {
+      loadDoc(activeDocumentId);
+    } else {
+      refreshDocList();
+    }
+  }, [activeDocumentId, language]);
+
+  // Aggressive touch prevention for iOS Safari on the workspace
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const preventTouch = (e) => {
+      // Prevent scrolling if not in scroll mode, or if we have a PDF (PDF handles its own scroll sometimes, but let's be safe)
+      if (toolMode !== 'scroll') {
+        e.preventDefault();
+      }
+    };
+
+    content.addEventListener('touchmove', preventTouch, { passive: false });
+    
+    return () => {
+      content.removeEventListener('touchmove', preventTouch);
+    };
+  }, [toolMode, pdfFile]);
+
+  useEffect(() => {
     if (apiKey) {
       initGemini(apiKey);
     }

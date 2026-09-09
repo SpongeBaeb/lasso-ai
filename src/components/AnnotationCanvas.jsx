@@ -88,6 +88,25 @@ export function AnnotationCanvas({ toolMode, containerRef, paths = [], onPathsCh
     };
   }, [containerRef]);
 
+  // Aggressive touch prevention for iOS Safari
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const preventTouch = (e) => {
+      if (isActive || isErasing || (isText && !activeTextBox)) {
+        e.preventDefault();
+      }
+    };
+
+    // React's onTouchMove/onPointerMove is often passive in Safari, so we need a native listener
+    canvas.addEventListener('touchmove', preventTouch, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('touchmove', preventTouch);
+    };
+  }, [isActive, isErasing, isText, activeTextBox]);
+
   const getCoordinates = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     return [
