@@ -162,6 +162,8 @@ function App() {
     setRedoStack([]);
     setActiveDocumentId(null);
     setShowExportMenu(false);
+    setSelectedArea(null);
+    setImageBase64(null);
     refreshDocList();
   };
 
