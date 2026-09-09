@@ -513,9 +513,13 @@ function App() {
             overflow: 'auto',
             backgroundColor: pdfFile ? 'transparent' : 'white',
             cursor: (toolMode === 'scroll' && !pdfFile) ? (isPanning ? 'grabbing' : 'grab') : 'default',
-            touchAction: (toolMode === 'pen' || toolMode === 'eraser' || toolMode === 'text' || (toolMode === 'scroll' && !pdfFile)) ? 'none' : 'auto'
+            touchAction: (toolMode === 'pen' || toolMode === 'eraser' || toolMode === 'text' || (toolMode === 'scroll' && !pdfFile)) ? 'none' : 'auto',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
           ref={contentRef}
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
           onPointerDown={handleWorkspacePointerDown}
           onPointerMove={handleWorkspacePointerMove}
           onPointerUp={handleWorkspacePointerUp}

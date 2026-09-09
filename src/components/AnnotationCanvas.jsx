@@ -251,6 +251,8 @@ export function AnnotationCanvas({ toolMode, containerRef, paths = [], onPathsCh
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        draggable={false}
+        onDragStart={(e) => e.preventDefault()}
         style={{
           position: 'absolute',
           top: 0,
@@ -259,7 +261,9 @@ export function AnnotationCanvas({ toolMode, containerRef, paths = [], onPathsCh
           height: '100%',
           pointerEvents: (isActive || isErasing || (isText && !activeTextBox)) ? 'auto' : 'none',
           touchAction: 'none',
-          cursor: isErasing ? 'crosshair' : (isText ? 'text' : 'default')
+          cursor: isErasing ? 'crosshair' : (isText ? 'text' : 'default'),
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
         }}
       />
       
