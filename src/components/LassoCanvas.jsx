@@ -20,16 +20,26 @@ export function LassoCanvas({ onSelectionComplete, onCancel }) {
     ctx.setLineDash([5, 5]); // Dashed line for lasso look
   }, []);
 
+  const getCoordinates = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: e.clientX, y: e.clientY };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  };
+
   const handlePointerDown = (e) => {
+    e.preventDefault(); // Prevent native drag
+    e.target.setPointerCapture(e.pointerId);
     setIsDrawing(true);
-    const { clientX, clientY } = e;
-    setPath([{ x: clientX, y: clientY }]);
+    setPath([getCoordinates(e)]);
   };
 
   const handlePointerMove = (e) => {
     if (!isDrawing) return;
-    const { clientX, clientY } = e;
-    const newPoint = { x: clientX, y: clientY };
+    const newPoint = getCoordinates(e);
     
     setPath((prev) => {
       const newPath = [...prev, newPoint];
@@ -38,8 +48,9 @@ export function LassoCanvas({ onSelectionComplete, onCancel }) {
     });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e) => {
     if (!isDrawing) return;
+    e.target.releasePointerCapture(e.pointerId);
     setIsDrawing(false);
 
     if (path.length > 5) { // Ensure it's a deliberate shape
@@ -106,13 +117,19 @@ export function LassoCanvas({ onSelectionComplete, onCancel }) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       style={{
-        position: 'fixed',
+        position: 'absolute',
         top: 0,
         left: 0,
+        width: '100%',
+        height: '100%',
         zIndex: 9999, // very high but below modals
         cursor: 'crosshair',
-        touchAction: 'none'
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
+      draggable={false}
+      onDragStart={(e) => e.preventDefault()}
     />
   );
 }

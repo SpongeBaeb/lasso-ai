@@ -427,10 +427,15 @@ function App() {
             >
               <h2>{t.upload}</h2>
               <p>{t.uploadDesc}</p>
-              <label className="primary-btn">
+              <label className="primary-btn" style={{ position: 'relative', overflow: 'hidden' }}>
                 <Upload size={20} />
                 {t.choose}
-                <input type="file" accept="application/pdf" onChange={handleFileChange} style={{ display: 'none' }} />
+                <input 
+                  type="file" 
+                  accept="application/pdf" 
+                  onChange={handleFileChange} 
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} 
+                />
               </label>
             </div>
 
