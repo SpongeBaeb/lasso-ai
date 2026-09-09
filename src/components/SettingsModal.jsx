@@ -52,7 +52,7 @@ export function SettingsModal({ onClose, apiKey, onSaveApiKey, language, onToggl
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 10000
+      zIndex: 10001
     }}>
       <div className="glass animate-in" style={{ padding: '2.5rem', maxWidth: '450px', width: '90%', position: 'relative' }}>
         {allowClose && (

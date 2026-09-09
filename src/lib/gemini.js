@@ -8,11 +8,17 @@ export const initGemini = (apiKey) => {
 
 export const validateGeminiApiKey = async (apiKey) => {
   try {
-    const testGenAI = new GoogleGenerativeAI(apiKey);
-    const model = testGenAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    await model.generateContent("hi");
-    return true;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+    );
+    if (response.ok) {
+      return true;
+    }
+    const errorData = await response.json();
+    console.error('API key validation failed:', errorData);
+    return false;
   } catch (error) {
+    console.error('API key validation error:', error);
     return false;
   }
 };
@@ -26,7 +32,7 @@ export const askQuestionWithImage = async (question, base64Image) => {
   // We need to strip this prefix for the API.
   const base64Data = base64Image.split(',')[1] || base64Image;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
   const prompt = question || "What's in this image?";
   const imagePart = {

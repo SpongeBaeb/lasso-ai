@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2, Eraser, Settings, LassoSelect } from 'lucide-react';
+import { MousePointer2, Pen, Crop, Upload, Home, Trash2, FileText, Undo2, Redo2, Download, Loader2, Eraser, Settings, LassoSelect, Type } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { LassoCanvas } from './components/LassoCanvas';
 import { AiDialog } from './components/AiDialog';
@@ -102,6 +102,7 @@ function App() {
   };
   const [penColor, setPenColor] = useState('#4A3F35');
   const [penThickness, setPenThickness] = useState(4);
+  const [fontSize, setFontSize] = useState(24);
   const [isDragging, setIsDragging] = useState(false);
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -135,6 +136,7 @@ function App() {
   const handleSaveApiKey = (key) => {
     localStorage.setItem('gemini_api_key', key);
     setApiKey(key);
+    initGemini(key);
   };
 
   const loadDoc = async (id) => {
@@ -159,6 +161,7 @@ function App() {
     setAnnotations([]);
     setRedoStack([]);
     setActiveDocumentId(null);
+    setShowExportMenu(false);
     refreshDocList();
   };
 
@@ -383,7 +386,7 @@ function App() {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
       <button 
-        onClick={() => setIsSettingsOpen(true)}
+        onClick={() => { setIsSettingsOpen(true); setSelectedArea(null); setImageBase64(null); }}
         style={{ position: 'fixed', top: '1.25rem', left: '1.25rem', zIndex: 9999, background: 'var(--panel-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '0.6rem', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)', boxShadow: 'var(--shadow-medium)', opacity: 0.3, transition: 'all 0.3s ease' }}
         onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(45deg)'; e.currentTarget.style.opacity = '1'; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(0deg)'; e.currentTarget.style.opacity = '0.3'; }}
@@ -526,13 +529,13 @@ function App() {
 
             {/* The Annotation Layer */}
             <AnnotationCanvas
-              isActive={toolMode === 'pen'}
-              isErasing={toolMode === 'eraser'}
+              toolMode={toolMode}
               containerRef={contentRef}
               paths={annotations}
               onPathsChange={handlePathsChange}
               penColor={penColor}
               penThickness={penThickness}
+              fontSize={fontSize}
               cameraOffset={cameraOffset}
             />
           </div>
@@ -542,83 +545,72 @@ function App() {
       {/* Floating Toolbar */}
       {activeDocumentId && (
         <div id="floating-toolbar" className="toolbar-container">
-          <ToolbarButton
-            icon={<Home size={28} />}
-            active={false}
-            onClick={closeDoc}
-            title="Home"
-          />
+          {/* Left Side: 4 buttons, 2 separators */}
+          <ToolbarButton icon={<Home size={28} />} active={false} onClick={closeDoc} title="Home" />
           <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
-          <ToolbarButton
-            icon={<Undo2 size={24} />}
-            active={false}
-            onClick={handleUndo}
-            title="Undo (Ctrl+Z)"
-            disabled={annotations.length === 0}
-          />
-          <ToolbarButton
-            icon={<Redo2 size={24} />}
-            active={false}
-            onClick={handleRedo}
-            title="Redo (Ctrl+Y)"
-            disabled={redoStack.length === 0}
-          />
+          
+          <ToolbarButton icon={<Undo2 size={24} />} active={false} onClick={handleUndo} title="Undo (Ctrl+Z)" disabled={annotations.length === 0} />
+          <ToolbarButton icon={<Redo2 size={24} />} active={false} onClick={handleRedo} title="Redo (Ctrl+Y)" disabled={redoStack.length === 0} />
           <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
-          <ToolbarButton
-            icon={<MousePointer2 size={28} />}
-            active={toolMode === 'scroll'}
-            onClick={() => handleSetToolMode('scroll')}
-            title="Scroll/Pan"
-          />
-          <div style={{ position: 'relative' }}>
-            <ToolbarButton
-              icon={<Pen size={28} />}
-              active={toolMode === 'pen'}
-              onClick={() => handleSetToolMode('pen')}
-              title="Pen Tool"
-            />
+          
+          <ToolbarButton icon={<MousePointer2 size={28} />} active={toolMode === 'scroll'} onClick={() => handleSetToolMode('scroll')} title="Scroll/Pan" />
+
+          {/* Center: 2 buttons */}
+          <div style={{ position: 'relative', display: 'flex' }}>
+            <ToolbarButton icon={<Pen size={28} />} active={toolMode === 'pen'} onClick={() => handleSetToolMode('pen')} title="Pen Tool" />
+            <ToolbarButton icon={<Type size={28} />} active={toolMode === 'text'} onClick={() => handleSetToolMode('text')} title="Text Tool" />
           </div>
-          <ToolbarButton
-            icon={<Eraser size={28} />}
-            active={toolMode === 'eraser'}
-            onClick={() => handleSetToolMode('eraser')}
-            title="Eraser Tool"
+
+          {/* Right Side: 4 buttons, 2 separators */}
+          <ToolbarButton icon={<Eraser size={28} />} active={toolMode === 'eraser'} onClick={() => handleSetToolMode('eraser')} title="Eraser Tool" />
+          <ToolbarButton icon={<LassoSelect size={28} />} active={toolMode === 'lasso'} onClick={() => handleSetToolMode('lasso')} title="Lasso Tool" />
+          <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
+
+          <ToolbarButton 
+            icon={<Trash2 size={24} />} 
+            active={false}
+            onClick={() => { 
+              if (window.confirm(language === 'ko' ? '모든 드로잉을 지우시겠습니까?' : 'Clear all drawings?')) {
+                handlePathsChange([]); 
+              }
+            }} 
+            title="Clear Canvas" 
+            disabled={annotations.length === 0} 
           />
-          <ToolbarButton
-            icon={<LassoSelect size={28} />}
-            active={toolMode === 'lasso'}
-            onClick={() => handleSetToolMode('lasso')}
-            title="Lasso Tool"
-          />
-          <ToolbarButton
-            icon={<Download size={28} />}
-            active={showExportMenu}
-            onClick={() => setShowExportMenu(!showExportMenu)}
-            title="Export"
-          />
+          <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.5rem' }} />
+
+          <ToolbarButton icon={<Download size={28} />} active={showExportMenu} onClick={() => setShowExportMenu(!showExportMenu)} title="Export" />
         </div>
       )}
 
       {/* Export Menu (Rendered outside to prevent clipping from overflow-x) */}
-      {showExportMenu && (
-        <div style={{ position: 'fixed', bottom: '7rem', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--panel-bg)', padding: '1rem', borderRadius: '24px', display: 'flex', gap: '1rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-medium)', zIndex: 1001, backdropFilter: 'blur(16px)' }} className="animate-in">
+      {showExportMenu && activeDocumentId && (
+        <div style={{ position: 'fixed', bottom: (toolMode === 'pen' || toolMode === 'text') ? '11.5rem' : '7rem', left: '50%', backgroundColor: 'var(--panel-bg)', padding: '1rem', borderRadius: '24px', display: 'flex', gap: '1rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-medium)', zIndex: 1001, backdropFilter: 'blur(16px)', transition: 'bottom 0.3s ease' }} className="chewy-in">
           <button onClick={() => handleExport('pdf')} className="primary-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '16px' }}>Save as PDF</button>
           <button onClick={() => handleExport('png')} className="dark-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', borderRadius: '16px' }}>Save as PNG</button>
         </div>
       )}
 
-      {/* Pen Options Palette (Rendered outside toolbar to avoid overflow clipping) */}
-      {toolMode === 'pen' && activeDocumentId && (
-        <div style={{ position: 'fixed', bottom: '7rem', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--panel-bg)', padding: '0.75rem', borderRadius: '24px', display: 'flex', gap: '0.75rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-medium)', zIndex: 1001, backdropFilter: 'blur(16px)' }} className="animate-in">
+      {/* Pen/Text Options Palette (Rendered outside toolbar to avoid overflow clipping) */}
+      {(toolMode === 'pen' || toolMode === 'text') && activeDocumentId && (
+        <div style={{ position: 'fixed', bottom: '7rem', left: '50%', backgroundColor: 'var(--panel-bg)', padding: '0.75rem', borderRadius: '24px', display: 'flex', gap: '0.75rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-medium)', zIndex: 1001, backdropFilter: 'blur(16px)' }} className="chewy-in">
           {['#4A3F35', '#E29578', '#A3B18A', '#E2C275', '#A98467'].map(c => (
             <button key={c} onClick={() => setPenColor(c)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: c, border: penColor === c ? '3px solid white' : '3px solid transparent', padding: 0, cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
           ))}
           <div style={{ width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.2rem' }} />
-          {[2, 4, 8].map(t => (
-            <button key={t} onClick={() => setPenThickness(t)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: 'white', border: penThickness === t ? '2px solid var(--primary)' : '2px solid transparent', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <div style={{ width: '14px', height: `${t}px`, backgroundColor: 'var(--text-main)', borderRadius: '2px' }} />
-            </button>
-          ))}
+          {toolMode === 'pen' ? (
+            [2, 4, 8].map(t => (
+              <button key={t} onClick={() => setPenThickness(t)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: 'white', border: penThickness === t ? '2px solid var(--primary)' : '2px solid transparent', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <div style={{ width: '14px', height: `${t}px`, backgroundColor: 'var(--text-main)', borderRadius: '2px' }} />
+              </button>
+            ))
+          ) : (
+            [16, 24, 36].map(s => (
+              <button key={s} onClick={() => setFontSize(s)} style={{ width: '28px', height: '28px', borderRadius: '14px', backgroundColor: 'white', border: fontSize === s ? '2px solid var(--primary)' : '2px solid transparent', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: `${s * 0.45}px`, fontWeight: 700, color: 'var(--text-main)', fontFamily: 'Quicksand, sans-serif' }}>
+                {s === 16 ? 'S' : s === 24 ? 'M' : 'L'}
+              </button>
+            ))
+          )}
         </div>
       )}
 
