@@ -176,6 +176,7 @@ export function AnnotationCanvas({ toolMode, containerRef, paths = [], onPathsCh
 
     const coords = getCoordinates(e);
 
+    e.preventDefault(); // Prevent Safari/iPad default drag behaviors
     e.target.setPointerCapture(e.pointerId);
     setIsDrawing(true);
 
@@ -213,7 +214,7 @@ export function AnnotationCanvas({ toolMode, containerRef, paths = [], onPathsCh
 
   return (
     <div 
-      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: activeTextBox ? 'auto' : 'none', zIndex: 50, overflow: 'hidden' }}
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: activeTextBox ? 'auto' : 'none', zIndex: 50, overflow: 'hidden', touchAction: 'none' }}
       onPointerDown={(e) => {
         // If there's an active text box and user clicked outside the textarea, commit it
         if (activeTextBox && e.target !== textAreaRef.current) {

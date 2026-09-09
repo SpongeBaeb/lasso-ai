@@ -513,7 +513,7 @@ function App() {
             overflow: 'auto',
             backgroundColor: pdfFile ? 'transparent' : 'white',
             cursor: (toolMode === 'scroll' && !pdfFile) ? (isPanning ? 'grabbing' : 'grab') : 'default',
-            touchAction: toolMode === 'scroll' && !pdfFile ? 'none' : 'auto'
+            touchAction: (toolMode === 'pen' || toolMode === 'eraser' || toolMode === 'text' || (toolMode === 'scroll' && !pdfFile)) ? 'none' : 'auto'
           }}
           ref={contentRef}
           onPointerDown={handleWorkspacePointerDown}
